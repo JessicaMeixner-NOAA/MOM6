@@ -2861,8 +2861,14 @@ subroutine allocate_mech_forcing(G, forces, stress, ustar, shelf, press, iceberg
   call myAlloc(forces%mass_berg,isd,ied,jsd,jed, iceberg)
 
   !These fileds should only be allocated when waves are being passed through the coupler
-  call myAlloc(forces%ustk0,isd,ied,jsd,jed, waves)
-  call myAlloc(forces%vstk0,isd,ied,jsd,jed, waves)
+!  call myAlloc(forces%ustk0,isd,ied,jsd,jed, waves)
+!  call myAlloc(forces%vstk0,isd,ied,jsd,jed, waves)
+! the 3 should be NumWaveBands... not sure how this should work properly? 
+  if (present(waves)) then ; if (waves) then ; if (.not.associated(forces%ustk0)) then
+    allocate(forces%ustk0(isd:ied,jsd:jed,3)) ; forces%ustk0(isd:ied,jsd:jed,3) = 0.0
+  endif ; endif ; endif
+
+
 
 end subroutine allocate_mech_forcing
 
@@ -2948,6 +2954,8 @@ subroutine deallocate_mech_forcing(forces)
   if (associated(forces%frac_shelf_v))   deallocate(forces%frac_shelf_v)
   if (associated(forces%area_berg))      deallocate(forces%area_berg)
   if (associated(forces%mass_berg))      deallocate(forces%mass_berg)
+  if (associated(forces%ustk0))      deallocate(forces%ustk0) ! ask if this is right?
+  if (associated(forces%vstk0))      deallocate(forces%vstk0)
 
 end subroutine deallocate_mech_forcing
 

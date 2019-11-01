@@ -182,6 +182,8 @@ type, public :: ice_ocean_boundary_type
                                                               !! ice-shelves, expressed as a coefficient
                                                               !! for divergence damping, as determined
                                                               !! outside of the ocean model in [m3/s]
+  real, pointer, dimension(:,:) :: ustk0         =>NULL() !<
+  real, pointer, dimension(:,:) :: vstk0         =>NULL() !<
   integer :: xtype                                            !< The type of the exchange - REGRID, REDIST or DIRECT
   type(coupler_2d_bc_type)      :: fluxes                     !< A structure that may contain an array of
                                                               !! named fields used for passive tracer fluxes.
@@ -634,6 +636,9 @@ subroutine convert_IOB_to_forces(IOB, forces, index_bounds, Time, G, US, CS)
     forces%initialized = .true.
   endif
 
+  if ( associated(IOB%ustk0) ) &
+    call allocate_mech_forcing(G, forces, waves=.true.)
+
   if ( (associated(IOB%area_berg) .and. (.not. associated(forces%area_berg))) .or. &
        (associated(IOB%mass_berg) .and. (.not. associated(forces%mass_berg))) ) &
     call allocate_mech_forcing(G, forces, iceberg=.true.)
@@ -803,6 +808,13 @@ subroutine convert_IOB_to_forces(IOB, forces, index_bounds, Time, G, US, CS)
     enddo ; enddo
 
   endif   ! endif for wind related fields
+
+  ! from wave ustk/vstk
+  do j=js,je; do i=is,ie
+     forces%ustk0(i,j) = IOB%ustk0(i-I0,j-J0) ! How to be careful here that the domains are right?
+     forces%vstk0(i,j) = IOB%vstk0(i-I0,j-J0)
+  enddo ; enddo
+  call pass_vector(forces%ustk0,forces%vstk0, G%domain )
 
   ! sea ice related dynamic fields
   if (associated(IOB%ice_rigidity)) then

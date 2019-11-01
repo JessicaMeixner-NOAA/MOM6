@@ -302,7 +302,7 @@ subroutine MOM_wave_interface_init(time, G, GV, US, param_file, CS, diag )
     case (COUPLER_STRING)! Reserved for coupling
       DataSource = Coupler
       ! This is just to make something work, but it needs to be read from the wavemodel.
-      NumBands = 1
+      NumBands = 3
       allocate( CS%WaveNum_Cen(NumBands) )
       allocate( CS%STKx0(G%isdB:G%iedB,G%jsd:G%jed,NumBands))
       allocate( CS%STKy0(G%isdB:G%iedB,G%jsd:G%jed,NumBands))
@@ -310,6 +310,9 @@ subroutine MOM_wave_interface_init(time, G, GV, US, param_file, CS, diag )
       CS%STKx0(:,:,:) = 0.0
       CS%STKy0(:,:,:) = 0.0
       partitionmode = 0
+      call get_param(param_file,mdl,"SURFBAND_WAVENUMBERS",CS%WaveNum_Cen, &
+      "Central wavenumbers for surface Stokes drift bands.",units='rad/m', &
+      default=0.12566)
     case (INPUT_STRING)! A method to input the Stokes band (globally uniform)
       DataSource = Input
       call get_param(param_file,mdl,"SURFBAND_NB",NumBands,                 &
@@ -468,12 +471,12 @@ subroutine Update_Surface_Waves(G, GV, US, Day, dt, CS, forces)
        do b=1,NumBands
         do II=G%iscB,G%iecB
           do jj=G%jsc,G%jec
-            CS%STKx0(II,jj,b) = 0.5*(forces%UStk0(ii,jj)+forces%UStk0(ii+1,jj))
+            CS%STKx0(II,jj,b) = 0.5*(forces%UStk0(ii,jj,b)+forces%UStk0(ii+1,jj,b))
           enddo
         enddo
         do ii=G%isc,G%iec
           do JJ=G%jscB, G%jecB
-            CS%STKY0(ii,JJ,b) = 0.5*(forces%VStk0(ii,jj)+forces%VStk0(ii,jj+1))
+            CS%STKY0(ii,JJ,b) = 0.5*(forces%VStk0(ii,jj,b)+forces%VStk0(ii,jj+1,b))
           enddo
         enddo
         call pass_vector(CS%STKx0(:,:,b),CS%STKy0(:,:,b), G%Domain)
