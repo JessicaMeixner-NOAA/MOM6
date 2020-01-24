@@ -814,11 +814,12 @@ subroutine convert_IOB_to_forces(IOB, forces, index_bounds, Time, G, US, CS)
 
   ! from wave ustk/vstk
   do j=js,je; do i=is,ie
-     forces%ustk0(i,j) = IOB%ustk0(i-I0,j-J0) ! How to be careful here that the domains are right?
-     forces%vstk0(i,j) = IOB%vstk0(i-I0,j-J0)
+     forces%ustk0(i,j,:) = IOB%ustk0(i-I0,j-J0,:) ! How to be careful here that the domains are right?
+     forces%vstk0(i,j,:) = IOB%vstk0(i-I0,j-J0,:)
   enddo ; enddo
-  call pass_vector(forces%ustk0,forces%vstk0, G%domain )
-
+  do i=1,NumBand
+    call pass_vector(forces%ustk0(:,:,i),forces%vstk0(:,:,i), G%domain )
+  enddo 
   ! sea ice related dynamic fields
   if (associated(IOB%ice_rigidity)) then
     call pass_var(rigidity_at_h, G%Domain, halo=1)
