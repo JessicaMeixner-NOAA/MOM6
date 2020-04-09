@@ -313,6 +313,10 @@ subroutine MOM_wave_interface_init(time, G, GV, US, param_file, CS, diag )
       CS%STKx0(:,:,:) = 0.0
       CS%STKy0(:,:,:) = 0.0
       partitionmode = 0
+      call get_param(param_file,mdl,"SURFBAND_WAVENUMBERS",CS%WaveNum_Cen,      &
+           "Central wavenumbers for surface Stokes drift bands.",units='rad/m', &
+           default=0.12566)
+      !Ask Brandon how he gets wave number bands. 
     case (INPUT_STRING)! A method to input the Stokes band (globally uniform)
       DataSource = Input
       call get_param(param_file,mdl,"SURFBAND_NB",NumBands,                 &

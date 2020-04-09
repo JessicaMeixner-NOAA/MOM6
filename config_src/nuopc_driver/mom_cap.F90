@@ -750,6 +750,20 @@ subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
   Ice_ocean_boundary%lrunoff         = 0.0
   Ice_ocean_boundary%frunoff         = 0.0
 
+!TODO: If Wave Coupling
+  allocate ( Ice_ocean_boundary% ustk0 (isc:iec,jsc:jec),         &
+             Ice_ocean_boundary% vstk0 (isc:iec,jsc:jec),         &
+             Ice_ocean_boundary% stk_wavenumbers (3),             &
+             Ice_ocean_boundary% ustkb (isc:iec,jsc:jec,3),       &
+             Ice_ocean_boundary% vstkb (isc:iec,jsc:jec,3))
+  Ice_ocean_boundary%num_stk_bands   = 3  !hard coded
+  Ice_ocean_boundary%ustk0           = 0.0
+  Ice_ocean_boundary%vstk0           = 0.0
+  Ice_ocean_boundary%stk_wavenumbers = 0.0
+  Ice_ocean_boundary%ustkb           = 0.0
+  Ice_ocean_boundary%vstkb           = 0.0
+!TODO: End If Wave Coupling 
+
   ocean_internalstate%ptr%ocean_state_type_ptr => ocean_state
   call ESMF_GridCompSetInternalState(gcomp, ocean_internalstate, rc)
   if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
@@ -796,6 +810,15 @@ subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
   !These are not currently used and changing requires a nuopc dictionary change
   !call fld_list_add(fldsToOcn_num, fldsToOcn, "mean_runoff_heat_flx"        , "will provide")
   !call fld_list_add(fldsToOcn_num, fldsToOcn, "mean_calving_heat_flx"       , "will provide")
+!TODO: If wave coupling 
+    call fld_list_add(fldsToOcn_num, fldsToOcn, "eastward_partitioned_stokes_drift_1" , "will provide")
+    call fld_list_add(fldsToOcn_num, fldsToOcn, "northward_partitioned_stokes_drift_1", "will provide")
+    call fld_list_add(fldsToOcn_num, fldsToOcn, "eastward_partitioned_stokes_drift_2" , "will provide")
+    call fld_list_add(fldsToOcn_num, fldsToOcn, "northward_partitioned_stokes_drift_2", "will provide")
+    call fld_list_add(fldsToOcn_num, fldsToOcn, "eastward_partitioned_stokes_drift_3" , "will provide")
+    call fld_list_add(fldsToOcn_num, fldsToOcn, "northward_partitioned_stokes_drift_3", "will provide")
+!TODO: end if wave coupling 
+
 
   !--------- export fields -------------
   call fld_list_add(fldsFrOcn_num, fldsFrOcn, "ocean_mask"                 , "will provide")
@@ -2695,6 +2718,9 @@ end subroutine shr_file_getLogUnit
 !!     <td>[vector rotation] (@ref VectorRotations) applied - lat-lon to tripolar</td>
 !! </tr>
 !! </table>
+
+!TODO: Add wave import fields
+
 !!
 !! @subsection ExportField Export Fields
 !!

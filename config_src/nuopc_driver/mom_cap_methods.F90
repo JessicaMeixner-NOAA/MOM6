@@ -70,6 +70,8 @@ subroutine mom_import(ocean_public, ocean_grid, importState, ice_ocean_boundary,
   character(len=128)              :: fldname
   real(ESMF_KIND_R8), allocatable :: taux(:,:)
   real(ESMF_KIND_R8), allocatable :: tauy(:,:)
+  real(ESMF_KIND_R8), allocatable :: stkx1(:,:),stkx2(:,:),stkx3(:,:)
+  real(ESMF_KIND_R8), allocatable :: stky1(:,:),stky2(:,:),stky3(:,:)
   character(len=*)  , parameter   :: subname = '(mom_import)'
 
   rc = ESMF_SUCCESS
@@ -301,6 +303,77 @@ subroutine mom_import(ocean_public, ocean_grid, importState, ice_ocean_boundary,
        line=__LINE__, &
        file=__FILE__)) &
        return  ! bail out
+
+
+!TODO: If Wave Coupling
+  !----
+  ! Partitioned Stokes Drift Components 
+  !----
+      
+  allocate(stkx1(isc:iec,jsc:jec))
+  allocate(stky1(isc:iec,jsc:jec))
+  allocate(stkx2(isc:iec,jsc:jec))
+  allocate(stky2(isc:iec,jsc:jec))
+  allocate(stkx3(isc:iec,jsc:jec))
+  allocate(stky3(isc:iec,jsc:jec))
+
+  call state_getimport(importState,'eastward_partitioned_stokes_drift_1' , isc, iec, jsc, jec, stkx1,rc=rc)
+  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+       line=__LINE__, &
+       file=__FILE__)) &
+       return  ! bail out
+  call state_getimport(importState,'northward_partitioned_stokes_drift_1', isc, iec, jsc, jec, stky1,rc=rc)
+  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+       line=__LINE__, &
+       file=__FILE__)) &
+       return  ! bail out
+  call state_getimport(importState,'eastward_partitioned_stokes_drift_2' , isc, iec, jsc, jec, stkx2,rc=rc)
+  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+       line=__LINE__, &
+       file=__FILE__)) &
+       return  ! bail out
+  call state_getimport(importState,'northward_partitioned_stokes_drift_2', isc, iec, jsc, jec, stky2,rc=rc)
+  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+       line=__LINE__, &
+       file=__FILE__)) &
+       return  ! bail out
+  call state_getimport(importState,'eastward_partitioned_stokes_drift_3' , isc, iec, jsc, jec, stkx3,rc=rc)
+  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+       line=__LINE__, &
+       file=__FILE__)) &
+       return  ! bail out
+  call state_getimport(importState,'northward_partitioned_stokes_drift_3', isc, iec, jsc, jec, stky3,rc=rc)
+  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+       line=__LINE__, &
+       file=__FILE__)) &
+       return  ! bail out
+
+  ! rotate from true zonal/meridional to local coordinates
+  do j = jsc, jec
+     jg = j + ocean_grid%jsc - jsc
+     do i = isc, iec
+        ig = i + ocean_grid%isc - isc
+        ice_ocean_boundary%ustkb(i,j,1) = ocean_grid%cos_rot(ig,jg)*stkx1(i,j) &
+             - ocean_grid%sin_rot(ig,jg)*stky1(i,j)
+        ice_ocean_boundary%vstkb(i,j,1) = ocean_grid%cos_rot(ig,jg)*stky1(i,j) &
+             + ocean_grid%sin_rot(ig,jg)*stkx1(i,j)
+
+        ice_ocean_boundary%ustkb(i,j,2) = ocean_grid%cos_rot(ig,jg)*stkx2(i,j) &
+             - ocean_grid%sin_rot(ig,jg)*stky2(i,j)
+        ice_ocean_boundary%vstkb(i,j,2) = ocean_grid%cos_rot(ig,jg)*stky2(i,j) &
+             + ocean_grid%sin_rot(ig,jg)*stkx2(i,j)
+
+        ice_ocean_boundary%ustkb(i,j,3) = ocean_grid%cos_rot(ig,jg)*stkx3(i,j) &
+             - ocean_grid%sin_rot(ig,jg)*stky3(i,j)
+        ice_ocean_boundary%vstkb(i,j,3) = ocean_grid%cos_rot(ig,jg)*stky3(i,j) &
+             + ocean_grid%sin_rot(ig,jg)*stkx3(i,j)
+
+     enddo
+  enddo
+
+  deallocate(stkx1,stkx2,stkx3,stky1,stky2,stky3)
+!TODO: End If Wave Coupling 
+
 
 end subroutine mom_import
 
