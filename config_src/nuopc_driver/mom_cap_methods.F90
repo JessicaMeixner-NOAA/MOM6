@@ -261,35 +261,17 @@ subroutine mom_import(ocean_public, ocean_grid, importState, ice_ocean_boundary,
   allocate(stky3(isc:iec,jsc:jec))
 
   call state_getimport(importState,'eastward_partitioned_stokes_drift_1' , isc, iec, jsc, jec, stkx1,rc=rc)
-  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-       line=__LINE__, &
-       file=__FILE__)) &
-       return  ! bail out
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
   call state_getimport(importState,'northward_partitioned_stokes_drift_1', isc, iec, jsc, jec, stky1,rc=rc)
-  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-       line=__LINE__, &
-       file=__FILE__)) &
-       return  ! bail out
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
   call state_getimport(importState,'eastward_partitioned_stokes_drift_2' , isc, iec, jsc, jec, stkx2,rc=rc)
-  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-       line=__LINE__, &
-       file=__FILE__)) &
-       return  ! bail out
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
   call state_getimport(importState,'northward_partitioned_stokes_drift_2', isc, iec, jsc, jec, stky2,rc=rc)
-  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-       line=__LINE__, &
-       file=__FILE__)) &
-       return  ! bail out
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
   call state_getimport(importState,'eastward_partitioned_stokes_drift_3' , isc, iec, jsc, jec, stkx3,rc=rc)
-  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-       line=__LINE__, &
-       file=__FILE__)) &
-       return  ! bail out
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
   call state_getimport(importState,'northward_partitioned_stokes_drift_3', isc, iec, jsc, jec, stky3,rc=rc)
-  if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-       line=__LINE__, &
-       file=__FILE__)) &
-       return  ! bail out
+  if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   ! rotate from true zonal/meridional to local coordinates
   do j = jsc, jec
