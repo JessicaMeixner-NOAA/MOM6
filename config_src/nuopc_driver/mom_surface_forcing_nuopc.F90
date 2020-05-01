@@ -676,11 +676,11 @@ subroutine convert_IOB_to_forces(IOB, forces, index_bounds, Time, G, US, CS)
   if (associated(forces%rigidity_ice_u)) forces%rigidity_ice_u(:,:) = 0.0
   if (associated(forces%rigidity_ice_v)) forces%rigidity_ice_v(:,:) = 0.0
 
-!TODO: Question: do we use ustk0 or ustkb also, should we have another check
-!such as "if UseWaves? 
   !wave to ocean coupling
-  if ( associated(IOB%ustk0) ) &
-    call allocate_mech_forcing(G, forces, waves=.true., num_stk_bands=IOB%num_stk_bands)
+  if (IOB%use_waves) then 
+    if ( associated(IOB%ustkb) ) &
+      call allocate_mech_forcing(G, forces, waves=.true., num_stk_bands=IOB%num_stk_bands)
+  endif 
 
   ! applied surface pressure from atmosphere and cryosphere
   if (CS%use_limited_P_SSH) then
@@ -839,20 +839,22 @@ subroutine convert_IOB_to_forces(IOB, forces, index_bounds, Time, G, US, CS)
 
   endif   ! endif for wind related fields
 
-  ! wave to ocean coupling 
-  forces%stk_wavenumbers(:) = IOB%stk_wavenumbers
-  do j=js,je; do i=is,ie
-     forces%ustk0(i,j) = IOB%ustk0(i-I0,j-J0) ! How to be careful here that the domains are right?
-     forces%vstk0(i,j) = IOB%vstk0(i-I0,j-J0)
-  enddo ; enddo
-  call pass_vector(forces%ustk0,forces%vstk0, G%domain )
-  do istk = 1,IOB%num_stk_bands
+  ! wave to ocean coupling
+  if (IOB%use_waves) then  
+    forces%stk_wavenumbers(:) = IOB%stk_wavenumbers
     do j=js,je; do i=is,ie
-      forces%ustkb(i,j,istk) = IOB%ustkb(i-I0,j-J0,istk)
-      forces%vstkb(i,j,istk) = IOB%vstkb(i-I0,j-J0,istk)
-    enddo; enddo
-    call pass_vector(forces%ustkb(:,:,istk),forces%vstkb(:,:,istk), G%domain )
-  enddo
+      forces%ustk0(i,j) = IOB%ustk0(i-I0,j-J0) ! How to be careful here that the domains are right?
+      forces%vstk0(i,j) = IOB%vstk0(i-I0,j-J0)
+    enddo ; enddo
+    call pass_vector(forces%ustk0,forces%vstk0, G%domain )
+    do istk = 1,IOB%num_stk_bands
+      do j=js,je; do i=is,ie
+        forces%ustkb(i,j,istk) = IOB%ustkb(i-I0,j-J0,istk)
+        forces%vstkb(i,j,istk) = IOB%vstkb(i-I0,j-J0,istk)
+      enddo; enddo
+      call pass_vector(forces%ustkb(:,:,istk),forces%vstkb(:,:,istk), G%domain )
+    enddo
+  endif 
 
   ! sea ice related dynamic fields
   if (associated(IOB%ice_rigidity)) then

@@ -968,7 +968,6 @@ subroutine get_Langmuir_Number( LA, G, GV, US, HBL, ustar, i, j, &
   integer :: KK, BB
 
 
-  allocate(StkBand_X(WAVES%NumBands), StkBand_Y(WAVES%NumBands))
  ! Compute averaging depth for Stokes drift (negative)
   Dpt_LASL = min(-0.1*US%m_to_Z, -LA_FracHBL*HBL)
 
@@ -1002,6 +1001,7 @@ subroutine get_Langmuir_Number( LA, G, GV, US, HBL, ustar, i, j, &
     call Get_SL_Average_Prof( GV, Dpt_LASL, H, VS_H, LA_STKy)
     LA_STK = sqrt(LA_STKX*LA_STKX+LA_STKY*LA_STKY)
   elseif (WaveMethod==SURFBANDS) then
+    allocate(StkBand_X(WAVES%NumBands), StkBand_Y(WAVES%NumBands))
     do bb = 1,WAVES%NumBands
       StkBand_X(bb) = 0.5*(WAVES%STKx0(I,j,bb)+WAVES%STKx0(I-1,j,bb))
       StkBand_Y(bb) = 0.5*(WAVES%STKy0(i,J,bb)+WAVES%STKy0(i,J-1,bb))
@@ -1009,6 +1009,7 @@ subroutine get_Langmuir_Number( LA, G, GV, US, HBL, ustar, i, j, &
     call Get_SL_Average_Band(GV, Dpt_LASL, WAVES%NumBands, WAVES%WaveNum_Cen, StkBand_X, LA_STKx )
     call Get_SL_Average_Band(GV, Dpt_LASL, WAVES%NumBands, WAVES%WaveNum_Cen, StkBand_Y, LA_STKy )
     LA_STK = sqrt(LA_STKX**2 + LA_STKY**2)
+    deallocate(StkBand_X, StkBand_Y)
   elseif (WaveMethod==DHH85) then
     ! Temporarily integrating profile rather than spectrum for simplicity
     do kk = 1,GV%ke
@@ -1041,8 +1042,6 @@ subroutine get_Langmuir_Number( LA, G, GV, US, HBL, ustar, i, j, &
     WaveDirection = atan2(LA_STKy, LA_STKx)
     LA = LA / sqrt(max(1.e-8, cos( WaveDirection - ShearDirection)))
   endif
-
-  deallocate(StkBand_X, StkBand_Y)
 
   return
 end subroutine get_Langmuir_Number
