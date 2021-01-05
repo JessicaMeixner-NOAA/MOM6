@@ -468,9 +468,9 @@ subroutine Update_Surface_Waves(G, GV, US, Day, dt, CS, forces)
     elseif (DataSource==Coupler) then
       if (.not.present(FORCES)) then 
         call MOM_error(FATAL,"The option SURFBAND = COUPLER can not be used with "//&
-             "this driver. If you are using a wave coupled driver then check then "//& 
-             "check the call to update_surface_waves, otherwise select another "//&
-             "option for SURFBAND_SOURCE.")
+             "this driver. If you are using a coupled driver with a wave model then "//& 
+             "check the arguments in the subroutine call to Update_Surface_Waves, "//&
+             "otherwise select another option for SURFBAND_SOURCE.")
       endif
       if (size(CS%WaveNum_Cen).ne.size(forces%stk_wavenumbers)) then
         call MOM_error(FATAL, "Number of wavenumber bands in WW3 does not match that in MOM6. "//&
