@@ -3041,12 +3041,12 @@ subroutine allocate_mech_forcing_by_group(G, forces, stress, ustar, shelf, &
     forces%stk_wavenumbers(:) = 0.0    
     allocate(forces%ustkb(isd:ied,jsd:jed,num_stk_bands)) 
     forces%ustkb(isd:ied,jsd:jed,:) = 0.0
-    endif; endif; endif
+  endif ; endif ; endif
 
   if (present(waves)) then; if (waves) then; if (.not.associated(forces%vstkb)) then    
     allocate(forces%vstkb(isd:ied,jsd:jed,num_stk_bands))
     forces%vstkb(isd:ied,jsd:jed,:) = 0.0
-  endif; endif; endif
+  endif ; endif ; endif
 
 end subroutine allocate_mech_forcing_by_group
 
